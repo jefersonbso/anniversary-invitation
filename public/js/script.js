@@ -7,7 +7,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 } else {
     // Defina a URL do seu backend no Render aqui
     // Exemplo: API_BASE_URL = 'https://seu-app.onrender.com';
-    API_BASE_URL = 'https://anniversary-invitation-api.onrender.com';
+    API_BASE_URL = 'https://anniversary-invitation-pleu.onrender.com/';
 }
 
 // Navegar para página de RSVP
