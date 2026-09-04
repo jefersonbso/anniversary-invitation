@@ -1,3 +1,15 @@
+// URL da API (será definida dinamicamente)
+let API_BASE_URL = '';
+
+// Detectar se estamos em desenvolvimento ou produção
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    API_BASE_URL = 'http://localhost:3000';
+} else {
+    // Defina a URL do seu backend no Render aqui
+    // Exemplo: API_BASE_URL = 'https://seu-app.onrender.com';
+    API_BASE_URL = 'https://anniversary-invitation-api.onrender.com';
+}
+
 // Navegar para página de RSVP
 function irParaRSVP() {
     window.location.href = '/rsvp.html';
@@ -36,22 +48,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataResposta: new Date().toLocaleString('pt-BR')
             };
 
+            // Mostrar loading
+            const btnSubmit = rsvpForm.querySelector('.btn-submit');
+            const btnTextoOriginal = btnSubmit.textContent;
+            btnSubmit.textContent = '⏳ Enviando...';
+            btnSubmit.disabled = true;
+
             // Enviar para backend
-            fetch('/api/rsvp', {
+            fetch(`${API_BASE_URL}/api/rsvp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
-                // Mostrar modal de sucesso
-                mostrarModalSucesso(formData);
+                if (data.success) {
+                    // Mostrar modal de sucesso
+                    mostrarModalSucesso(formData);
+                } else {
+                    alert('Erro: ' + data.message);
+                    btnSubmit.textContent = btnTextoOriginal;
+                    btnSubmit.disabled = false;
+                }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Ocorreu um erro ao salvar seus dados. Por favor, tente novamente.');
+                alert('Ocorreu um erro ao salvar seus dados. Por favor, tente novamente.\n\nDetalhes: ' + error.message);
+                btnSubmit.textContent = btnTextoOriginal;
+                btnSubmit.disabled = false;
             });
         });
     }
