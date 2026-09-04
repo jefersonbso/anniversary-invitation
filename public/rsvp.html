@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 Confirme Sua Presença</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="rsvp-card">
+            <!-- Header -->
+            <div class="rsvp-header">
+                <h1>Confirmação de Presença</h1>
+                <p>Mirlane, nos ajude a organizar seu presente especial!</p>
+            </div>
+
+            <!-- Decoração -->
+            <div class="decoration top">
+                <span class="flower">🌹</span>
+                <span class="heart">💕</span>
+                <span class="flower">🌹</span>
+            </div>
+
+            <!-- Formulário -->
+            <form id="rsvpForm" class="rsvp-form">
+                <!-- Roupa Nova -->
+                <div class="form-group">
+                    <label for="roupa">👗 Que tipo de roupa nova você gostaria?</label>
+                    <select id="roupa" name="roupa" required>
+                        <option value="">-- Selecione --</option>
+                        <option value="vestido-curto">Vestido Curto</option>
+                        <option value="vestido-longo">Vestido Longo</option>
+                        <option value="blusa-calca">Blusa + Calça</option>
+                        <option value="saia">Saia e Blusa</option>
+                        <option value="macacao">Macacão</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+
+                <!-- Sapato Novo -->
+                <div class="form-group">
+                    <label for="sapato">👠 Qual tipo de sapato novo?</label>
+                    <select id="sapato" name="sapato" required>
+                        <option value="">-- Selecione --</option>
+                        <option value="salto-alto">Salto Alto</option>
+                        <option value="salto-medio">Salto Médio</option>
+                        <option value="sapato-social">Sapato Social</option>
+                        <option value="sapatilha">Sapatilha/Ballet</option>
+                        <option value="sandalia">Sandália</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+
+                <!-- Joia -->
+                <div class="form-group">
+                    <label for="joia">💎 Qual tipo de joia você prefere?</label>
+                    <select id="joia" name="joia" required>
+                        <option value="">-- Selecione --</option>
+                        <option value="colar">Colar</option>
+                        <option value="pulseira">Pulseira</option>
+                        <option value="brinco">Brinco</option>
+                        <option value="anel">Anel</option>
+                        <option value="kit-completo">Kit Completo</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+
+                <!-- Tipo de Comida -->
+                <div class="form-group">
+                    <label for="comida">🍽️ Qual tipo de comida você prefere?</label>
+                    <select id="comida" name="comida" required>
+                        <option value="">-- Selecione --</option>
+                        <option value="italiana">Italiana</option>
+                        <option value="francesa">Francesa</option>
+                        <option value="brasileira">Brasileira</option>
+                        <option value="japonesa">Japonesa</option>
+                        <option value="churrascaria">Churrascaria</option>
+                        <option value="frutos-do-mar">Frutos do Mar</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+
+                <!-- Com ou Sem Crianças -->
+                <div class="form-group">
+                    <label for="criancas">👶 Como você prefere?</label>
+                    <select id="criancas" name="criancas" required>
+                        <option value="">-- Selecione --</option>
+                        <option value="com-criancas">Com crianças</option>
+                        <option value="sem-criancas">Sem crianças (noite romântica)</option>
+                    </select>
+                </div>
+
+                <!-- Campo adicional de observações -->
+                <div class="form-group">
+                    <label for="observacoes">💭 Observações adicionais (opcional)</label>
+                    <textarea id="observacoes" name="observacoes" rows="4" placeholder="Deixe aqui qualquer informação adicional..."></textarea>
+                </div>
+
+                <!-- Botões -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">Confirmar Minha Presença ✨</button>
+                    <button type="button" class="btn-back" onclick="voltarAoConvite()">Voltar</button>
+                </div>
+            </form>
+
+            <!-- Decoração inferior -->
+            <div class="decoration bottom">
+                <span class="flower">🌹</span>
+                <span class="heart">💕</span>
+                <span class="flower">🌹</span>
+            </div>
+        </div>
+
+        <!-- Modal de sucesso -->
+        <div id="successModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="success-icon">💕✨</div>
+                <h2>Confirmado com Sucesso!</h2>
+                <p>Obrigado por confirmar sua presença, Mirlane!</p>
+                <p class="confirmation-details" id="confirmationDetails"></p>
+                <button onclick="fecharModal()" class="btn-submit">Fechar</button>
+            </div>
+        </div>
+
+        <!-- Fundo animado -->
+        <div class="background-animation">
+            <div class="heart-float">💕</div>
+            <div class="heart-float">💕</div>
+            <div class="heart-float">💕</div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
