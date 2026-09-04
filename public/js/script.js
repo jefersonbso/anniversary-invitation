@@ -1,5 +1,5 @@
 // URL da API (será definida dinamicamente)
-let API_BASE_URL = '';
+let API_BASE_URL = 'https://anniversary-invitation-pleu.onrender.com/';
 
 // Detectar se estamos em desenvolvimento ou produção
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
