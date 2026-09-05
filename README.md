@@ -77,6 +77,8 @@ anniversary-invitation/
 
 ## 🎯 Funcionalidades
 
+> Obs: há instruções específicas para conectar o backend ao Firebase em `FIREBASE_SETUP.md` (criar coleção e configurar chave de conta de serviço).
+
 ### ✨ Página Inicial
 - Design elegante com cores rose/pink
 - Corações animados flutuando

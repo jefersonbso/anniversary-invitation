@@ -1,152 +1,84 @@
+require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
+const admin = require('firebase-admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cors());
-
-// Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Criar diretório para armazenar respostas se não existir
-const responsesDir = path.join(__dirname, 'responses');
-if (!fs.existsSync(responsesDir)) {
-    fs.mkdirSync(responsesDir, { recursive: true });
+// Firebase initialization
+const firebaseConfigJson = process.env.FIREBASE_CONFIG_JSON;
+if (!firebaseConfigJson) {
+  console.warn('Warning: FIREBASE_CONFIG_JSON not set. API will fail until configured.');
+} else {
+  try {
+    const serviceAccount = JSON.parse(firebaseConfigJson);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  } catch (err) {
+    console.error('Firebase initialization error:', err.message);
+  }
 }
 
-// Rota raiz
+const db = admin.firestore();
+
+// Serve index
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota para a página de RSVP
-app.get('/rsvp.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'rsvp.html'));
+// Accept page
+app.get('/accept.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'accept.html'));
 });
 
-// API para salvar resposta RSVP
-app.post('/api/rsvp', (req, res) => {
-    try {
-        const { roupa, sapato, joia, comida, criancas, observacoes, dataResposta } = req.body;
+// POST RSVP -> insert into Firebase Firestore collection 'rsvps'
+app.post('/api/rsvp', async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const doc = {
+      guest_name: payload.guest_name || 'Mirlane Taylor',
+      roupa_nova: payload.roupa_nova || null,
+      sapato_novo: payload.sapato_novo || null,
+      joia: payload.joia || null,
+      tipo_comida: payload.tipo_comida || null,
+      com_criancas: payload.com_criancas === true || payload.com_criancas === 'true' || payload.com_criancas === 'on' || payload.com_criancas === 1,
+      notes: payload.notes || null,
+      created_at: admin.firestore.Timestamp.now()
+    };
 
-        // Validar dados
-        if (!roupa || !sapato || !joia || !comida || !criancas) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Todos os campos obrigatórios devem ser preenchidos!' 
-            });
-        }
-
-        // Criar objeto com a resposta
-        const rsvpData = {
-            id: Date.now(),
-            nome: 'Mirlane Taylor',
-            roupa,
-            sapato,
-            joia,
-            comida,
-            criancas,
-            observacoes: observacoes || 'Nenhuma',
-            dataResposta,
-            timestamp: new Date().toISOString()
-        };
-
-        // Salvar em arquivo JSON
-        const filePath = path.join(responsesDir, 'rsvp-responses.json');
-        let responses = [];
-
-        // Ler respostas existentes
-        if (fs.existsSync(filePath)) {
-            const data = fs.readFileSync(filePath, 'utf8');
-            responses = JSON.parse(data || '[]');
-        }
-
-        // Adicionar nova resposta
-        responses.push(rsvpData);
-
-        // Salvar arquivo atualizado
-        fs.writeFileSync(filePath, JSON.stringify(responses, null, 2), 'utf8');
-
-        // Log no console
-        console.log('✅ Nova resposta RSVP salva:');
-        console.log(rsvpData);
-
-        // Responder com sucesso
-        res.json({ 
-            success: true, 
-            message: 'Resposta salva com sucesso!',
-            data: rsvpData
-        });
-
-    } catch (error) {
-        console.error('❌ Erro ao salvar resposta:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Erro ao processar sua resposta. Por favor, tente novamente.' 
-        });
-    }
+    const docRef = await db.collection('rsvps').add(doc);
+    return res.json({ success: true, data: { id: docRef.id, ...doc } });
+  } catch (err) {
+    console.error('Firebase error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-// API para obter todas as respostas (opcional - para visualização)
-app.get('/api/rsvp/all', (req, res) => {
-    try {
-        const filePath = path.join(responsesDir, 'rsvp-responses.json');
-        
-        if (!fs.existsSync(filePath)) {
-            return res.json({ responses: [] });
-        }
-
-        const data = fs.readFileSync(filePath, 'utf8');
-        const responses = JSON.parse(data || '[]');
-
-        res.json({ 
-            success: true,
-            totalRespostas: responses.length,
-            responses 
-        });
-
-    } catch (error) {
-        console.error('❌ Erro ao obter respostas:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Erro ao obter respostas.' 
-        });
-    }
+// GET all RSVPs
+app.get('/api/rsvp/all', async (req, res) => {
+  try {
+    const snapshot = await db.collection('rsvps').orderBy('created_at', 'desc').get();
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return res.json({ success: true, total: docs.length, data: docs });
+  } catch (err) {
+    console.error('Firebase query error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-// Rota para verificar a saúde da API
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
-        message: 'Servidor rodando com sucesso!',
-        timestamp: new Date().toISOString()
-    });
-});
+// Health
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// Tratamento de rotas não encontradas
-app.use((req, res) => {
-    res.status(404).json({ 
-        success: false, 
-        message: 'Rota não encontrada.' 
-    });
-});
+// 404
+app.use((req, res) => res.status(404).json({ success: false, message: 'Rota não encontrada.' }));
 
-// Iniciar servidor
 app.listen(PORT, () => {
-    console.log('');
-    console.log('🎉 ========================================');
-    console.log('💕 Servidor de Convite de Casamento');
-    console.log('========================================');
-    console.log(`✨ Servidor rodando em: http://localhost:${PORT}`);
-    console.log(`📅 Data: 12 de Setembro`);
-    console.log(`👰 Para: Mirlane Taylor`);
-    console.log('========================================');
-    console.log('');
+  console.log('💕 Convite - servidor rodando em', `http://localhost:${PORT}`);
 });

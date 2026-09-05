@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Confirmar presença</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="form-wrap">
+    <h1>Obrigada — algumas coisinhas</h1>
+    <p>Preencha o que você precisa para a ocasião.</p>
+    <form id="rsvp-form">
+      <input type="hidden" name="guest_name" value="Mirlane Taylor">
+      <label>Roupa nova<br><input name="roupa_nova" placeholder="Ex: Vestido azul" /></label>
+      <label>Sapato novo<br><input name="sapato_novo" placeholder="Ex: Sandália prata" /></label>
+      <label>Joia<br><input name="joia" placeholder="Ex: Brincos" /></label>
+      <label>Tipo de comida<br>
+        <select name="tipo_comida">
+          <option>Jantar formal</option>
+          <option>Buffet</option>
+          <option>Finger food</option>
+          <option>Outro</option>
+        </select>
+      </label>
+      <fieldset>
+        <legend>Com ou sem crianças?</legend>
+        <label><input type="radio" name="com_criancas" value="true"> Com crianças</label>
+        <label><input type="radio" name="com_criancas" value="false" checked> Sem crianças</label>
+      </fieldset>
+      <label>Observações<br><textarea name="notes" rows="3" placeholder="Alguma restrição, preferências..."></textarea></label>
+      <button type="submit" class="btn">Enviar</button>
+    </form>
+    <div id="result" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById('rsvp-form');
+    const result = document.getElementById('result');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const payload = {};
+      for (const [k,v] of data.entries()) payload[k] = v;
+      // convert com_criancas to boolean
+      if (payload.com_criancas === 'true') payload.com_criancas = true;
+      else payload.com_criancas = false;
+      try {
+        const res = await fetch('/api/rsvp', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.success) {
+          result.textContent = 'Obrigado — resposta registrada!';
+          form.reset();
+        } else {
+          result.textContent = 'Erro: ' + (json.error || 'Não foi possível salvar.');
+        }
+      } catch (err) {
+        result.textContent = 'Erro: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
